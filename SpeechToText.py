@@ -6,7 +6,7 @@ from io import BytesIO
 from deta import Deta   
 
 st.set_page_config(
-    page_title="Whisper | SpeechToText",
+    page_title="Speech Recognizer",
     # page_icon=im,
     layout="wide",
 )
@@ -40,7 +40,7 @@ def getItem():
 ######################### Frontend UI of the Application #########################
 
 # App Title Name
-st.title("Speech to Text")
+st.title("Speech Recognizer")
 
 
 key = st.sidebar.text_input("Enter the Security Key")
