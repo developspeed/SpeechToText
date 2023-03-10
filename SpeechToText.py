@@ -5,7 +5,11 @@ from audio_recorder_streamlit import audio_recorder
 from io import BytesIO
 from deta import Deta   
 
-
+st.set_page_config(
+    page_title="Speech Recognizer",
+    # page_icon=im,
+    layout="wide",
+)
 
 hide_menu = """
 <style>
