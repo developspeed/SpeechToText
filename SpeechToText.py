@@ -282,6 +282,9 @@ elif key == "":
 else:
     st.sidebar.error("Incorrect Secret Key")
 
+ 
+st.write('__________________________________________________________________________________________')
+    
 link = '[Magicaibox](https://www.magicaibox.site/controlpanel/udashboard)'
 html = """
     <style>
