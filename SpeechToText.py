@@ -42,28 +42,7 @@ def getItem():
 # App Title Name
 st.title("Speech Recognizer")
 
-link = '[Return to Magicaibox](https://www.magicaibox.site/controlpanel/udashboard)'
-html = """
-    <style>
-    a{
-        border-radius:2px;
-        border:1px solid;
-        text-decoration:none;
-        padding:6px;
-        color: black;
-    }
-    a:hover{
-        text-decoration:none;
-        color:red;
-        border:1px solid red;
-    }
-    .css-1fv8s86 e16nr0p34{
-        float: right;
-        margin-top: -50px;
-    }
-"""
-st.markdown(link, unsafe_allow_html=True)
-st.markdown(html, unsafe_allow_html=True)
+
 
 key = st.sidebar.text_input("Enter the Security Key")
 auth = getItem()
@@ -310,4 +289,27 @@ elif key == "":
 else:
     st.sidebar.error("Incorrect Secret Key")
 
+st.write("______________________________________________________________________________")
 
+link = '[Return to Magicaibox](https://www.magicaibox.site/controlpanel/udashboard)'
+html = """
+    <style>
+    a{
+        border-radius:2px;
+        border:1px solid;
+        text-decoration:none;
+        padding:6px;
+        color: black;
+    }
+    a:hover{
+        text-decoration:none;
+        color:red;
+        border:1px solid red;
+    }
+    .css-1fv8s86 e16nr0p34{
+        float: right;
+        margin-top: -50px;
+    }
+"""
+st.markdown(link, unsafe_allow_html=True)
+st.markdown(html, unsafe_allow_html=True)
