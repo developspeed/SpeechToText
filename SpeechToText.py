@@ -42,6 +42,28 @@ def getItem():
 # App Title Name
 st.title("Speech Recognizer")
 
+link = '[Return to Magicaibox](https://www.magicaibox.site/controlpanel/udashboard)'
+html = """
+    <style>
+    a{
+        border-radius:2px;
+        border:1px solid;
+        text-decoration:none;
+        padding:6px;
+        color: black;
+    }
+    a:hover{
+        text-decoration:none;
+        color:red;
+        border:1px solid red;
+    }
+    .css-1fv8s86 e16nr0p34{
+        float: right;
+        margin-top: -50px;
+    }
+"""
+st.markdown(link, unsafe_allow_html=True)
+st.markdown(html, unsafe_allow_html=True)
 
 key = st.sidebar.text_input("Enter the Security Key")
 auth = getItem()
@@ -105,9 +127,6 @@ if key == auth[4]["secretKey"]:
     os.environ['REPLICATE_API_TOKEN'] = apiKey[0]["api_key"]
 
 
-    # Grabbing the models models
-    model = replicate.models.get("openai/whisper")
-    version = model.versions.get("30414ee7c4fffc37e260fcab7842b5be470b9b840f2b608f5baa9bbef9a259ed")
 
     # To define the language of the audio file leave blank for automatic detection
     st.sidebar.write('Language spoken in the audio, specify None to perform language detection')
@@ -116,6 +135,10 @@ if key == auth[4]["secretKey"]:
     st.write("__________________________________________________________________")
     if st.button("Transcribe Audio"):
         if audio_file is not None:
+            # Grabbing the models models
+            model = replicate.models.get("openai/whisper")
+            version = model.versions.get("30414ee7c4fffc37e260fcab7842b5be470b9b840f2b608f5baa9bbef9a259ed")
+
             databaseValue = getItem()
             inputs = {
                 # Audio file
@@ -196,13 +219,18 @@ if key == auth[4]["secretKey"]:
                 st.error("Looks like some parameters are incorrect in settings or API expired.")
         
         if audio_upload is not None:
+            
+            # Model Initialization
+            model = replicate.models.get("openai/whisper")
+            version = model.versions.get("e39e354773466b955265e969568deb7da217804d8e771ea8c9cd0cef6591f8bc")
+            
             databaseValue = getItem()
             inputs = {
                 # Audio file
                 'audio': audio_upload,
 
                 # Choose a Whisper model.
-                'model': databaseValue[1]["model"],
+                'model': "large-v2",
 
                 # Choose the format for the transcription
                 'transcription': databaseValue[1]["transcription"],
@@ -215,42 +243,42 @@ if key == auth[4]["secretKey"]:
                 # 'language': ...,
 
                 # temperature to use for sampling
-                'temperature': databaseValue[1]["temperature"],
+                'temperature': 0,
 
                 # optional patience value to use in beam decoding, as in
                 # https://arxiv.org/abs/2204.05424, the default (1.0) is equivalent to
                 # conventional beam search
-                'patience': databaseValue[1]["patience"],
+                # 'patience': databaseValue[1]["patience"],
 
                 # comma-separated list of token ids to suppress during sampling; '-1'
                 # will suppress most special characters except common punctuations
-                'suppress_tokens': databaseValue[1]["suppress_tokens"],
+                'suppress_tokens': -1,
 
                 # optional text to provide as a prompt for the first window.
-                'initial_prompt': databaseValue[1]["initial_prompt"],
+                # 'initial_prompt': databaseValue[1]["initial_prompt"],
 
                 # if True, provide the previous output of the model as a prompt for
                 # the next window; disabling may make the text inconsistent across
                 # windows, but the model becomes less prone to getting stuck in a
                 # failure loop
-                'condition_on_previous_text': databaseValue[1]["checkBoxVal"],
+                'condition_on_previous_text': True,
 
                 # temperature to increase when falling back when the decoding fails to
                 # meet either of the thresholds below
-                'temperature_increment_on_fallback': databaseValue[1]["temperature_increment_on_fallback"],
+                'temperature_increment_on_fallback': 0.2,
 
                 # if the gzip compression ratio is higher than this value, treat the
                 # decoding as failed
-                'compression_ratio_threshold': databaseValue[1]["compression_ratio_threshold"],
+                'compression_ratio_threshold': 2.4,
 
                 # if the average log probability is lower than this value, treat the
                 # decoding as failed
-                'logprob_threshold': databaseValue[1]["logprob_threshold"],
+                'logprob_threshold': -1,
 
                 # if the probability of the <|nospeech|> token is higher than this
                 # value AND the decoding has failed due to `logprob_threshold`,
                 # consider the segment as silence
-                'no_speech_threshold': databaseValue[1]["no_speech_threshold"],
+                'no_speech_threshold': 0.6,
             }
 
             # https://replicate.com/openai/whisper/versions/30414ee7c4fffc37e260fcab7842b5be470b9b840f2b608f5baa9bbef9a259ed#output-schema
@@ -282,24 +310,4 @@ elif key == "":
 else:
     st.sidebar.error("Incorrect Secret Key")
 
- 
-st.write('__________________________________________________________________________________________')
-    
-link = '[Magicaibox](https://www.magicaibox.site/controlpanel/udashboard)'
-html = """
-    <style>
-    a{
-        border-radius:2px;
-        border:1px solid;
-        text-decoration:none;
-        padding:6px;
-        color: black;
-    }
-    a:hover{
-        text-decoration:none;
-        color:red;
-        border:1px solid red;
-    }
-"""
-st.markdown(link, unsafe_allow_html=True)
-st.markdown(html, unsafe_allow_html=True)
+
