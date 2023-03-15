@@ -40,8 +40,34 @@ def getItem():
 ######################### Frontend UI of the Application #########################
 
 # App Title Name
-st.title("Speech Recognizer")
-
+col1 , col2 , col3 = st.columns(3)
+with col1:
+    st.title("Speech Recognizer")
+with col3:
+    st.write("")
+    st.write("")
+    link = '[Return to Magicaibox](https://www.magicaibox.site/controlpanel/udashboard)'
+    html = """
+        <style>
+        a{
+            border-radius:2px;
+            border:1px solid;
+            text-decoration:none;
+            padding:6px;
+            color: black;
+        }
+        a:hover{
+            text-decoration:none;
+            color:red;
+            border:1px solid red;
+        }
+        .css-1fv8s86 e16nr0p34{
+            float: right;
+            margin-top: -50px;
+        }
+    """
+    st.markdown(link, unsafe_allow_html=True)
+    st.markdown(html, unsafe_allow_html=True)
 
 
 key = st.sidebar.text_input("Enter the Security Key")
@@ -68,7 +94,7 @@ if key == auth[4]["secretKey"]:
     st.sidebar.write("__________________________")
     st.write("______________________________________________________________________________________________________________________")
 
-    # Uploading audio file
+
 
     # Taking audio file from mic
     audio_file = audio_recorder(
@@ -97,14 +123,14 @@ if key == auth[4]["secretKey"]:
     newAudio = BytesIO(audio_file)
 
 
-    ################## Backend Logic of the Application #####################
-
-
     # Setting the Environment of the application using the API token of Replicate from the database
     apiKey = getItem()
     # os.environ['REPLICATE_API_TOKEN'] = "12229e73fd19da262b8a02e3cc386b842cad82ba"
     os.environ['REPLICATE_API_TOKEN'] = apiKey[0]["api_key"]
 
+    # Setting the models of replicate open ai whisper
+    model = replicate.models.get("openai/whisper")
+    version = model.versions.get("e39e354773466b955265e969568deb7da217804d8e771ea8c9cd0cef6591f8bc")
 
 
     # To define the language of the audio file leave blank for automatic detection
@@ -112,204 +138,85 @@ if key == auth[4]["secretKey"]:
     option = st.sidebar.selectbox('Choose Language',("","af","am","ar","as","az","ba","be","bg","bn","bo","br","bs","ca","cs","cy","da","de","el","en","es","et","eu","fa","fi","fo","fr","gl","gu","ha","haw","hi","hr","ht","hu","hy","id","is","it","iw","ja","jw","ka","kk","km","kn","ko","la","lb","ln","lo","lt","lv","mg","mi","mk","ml","mn","mr","ms","mt","my","ne","nl","nn","no","oc","pa","pl","ps","pt","ro","ru","sa","sd","si","sk","sl","sn","so","sq","sr","su","sv","sw","ta","te","tg","th","tk","tl","tr","tt","uk","ur","uz","vi","yi","yo","zh","Afrikaans","Albanian","Amharic","Arabic","Armenian","Assamese","Azerbaijani","Bashkir","Basque","Belarusian","Bengali","Bosnian","Breton","Bulgarian","Burmese","Castilian","Catalan","Chinese","Croatian","Czech","Danish","Dutch","English","Estonian","Faroese","Finnish","Flemish","French","Galician","Georgian","German","Greek","Gujarati","Haitian","Creole","Hausa","Hawaiian","Hebrew","Hindi","Hungarian","Icelandic","Indonesian","Italian","Japanese","Javanese","Kannada","Kazakh","Khmer","Korean","Lao","Latin","Latvian","Letzeburgesch","Lingala","Lithuanian","Luxembourgish","Macedonian","Malagasy","Malay","Malayalam","Maltese","Maori","Marathi","Moldavian","Moldovan","Mongolian","Myanmar","Nepali","Norwegian","Nynorsk","Occitan","Panjabi","Pashto","Persian","Polish","Portuguese","Punjabi","Pushto","Romanian","Russian","Sanskrit","Serbian","Shona","Sindhi","Sinhala","Sinhalese","Slovak","Slovenian","Somali","Spanish","Sundanese","Swahili","Swedish","Tagalog","Tajik","Tamil","Tatar","Telugu","Thai","Tibetan","Turkish","Turkmen","Ukrainian","Urdu","Uzbek","Valencian","Vietnamese","Welsh","Yiddish","Yoruba"))
 
     st.write("__________________________________________________________________")
-    if st.button("Transcribe Audio"):
-        if audio_file is not None:
-            # Grabbing the models models
-            model = replicate.models.get("openai/whisper")
-            version = model.versions.get("30414ee7c4fffc37e260fcab7842b5be470b9b840f2b608f5baa9bbef9a259ed")
+    col4 , col5 = st.columns(2)
+    with col5:
+        st.checkbox("Translate",value=True)
+    with col4:
+        if st.button("Transcribe Audio"):
+            if audio_file is not None:
 
-            databaseValue = getItem()
-            inputs = {
-                # Audio file
-                'audio': newAudio,
+                databaseValue = getItem()
+                inputs = {
+                    # Audio file
+                    'audio': newAudio,
+                    'model': "large-v2",
+                    'transcription': databaseValue[1]["transcription"],
+                    'translate': True,
+                    'temperature': databaseValue[1]["temperature"],
+                    'suppress_tokens': databaseValue[1]["suppress_tokens"],
+                    'condition_on_previous_text': databaseValue[1]["checkBoxVal"],
+                    'temperature_increment_on_fallback': databaseValue[1]["temperature_increment_on_fallback"],
+                    'compression_ratio_threshold': databaseValue[1]["compression_ratio_threshold"],
+                    'logprob_threshold': databaseValue[1]["logprob_threshold"],
+                    'no_speech_threshold': databaseValue[1]["no_speech_threshold"],
+                }
 
-                # Choose a Whisper model.
-                'model': databaseValue[1]["model"],
+                try:
+                    st.warning("Transcribing Audio...")
+                    output = version.predict(**inputs)
 
-                # Choose the format for the transcription
-                'transcription': databaseValue[1]["transcription"],
+                    # Audio Language Detection
+                    st.write("Detected Language : ", output['detected_language'])
+                    st.subheader("Output")
+                    st.text_area(" ",value=output["transcription"])
 
-                # Translate the text to English when set to True
-                'translate': True,
-
-                # language spoken in the audio, specify None to perform language
-                # detection
-                # 'language': ...,
-
-                # temperature to use for sampling
-                'temperature': databaseValue[1]["temperature"],
-
-                # optional patience value to use in beam decoding, as in
-                # https://arxiv.org/abs/2204.05424, the default (1.0) is equivalent to
-                # conventional beam search
-                'patience': databaseValue[1]["patience"],
-
-                # comma-separated list of token ids to suppress during sampling; '-1'
-                # will suppress most special characters except common punctuations
-                'suppress_tokens': databaseValue[1]["suppress_tokens"],
-
-                # optional text to provide as a prompt for the first window.
-                'initial_prompt': databaseValue[1]["initial_prompt"],
-
-                # if True, provide the previous output of the model as a prompt for
-                # the next window; disabling may make the text inconsistent across
-                # windows, but the model becomes less prone to getting stuck in a
-                # failure loop
-                'condition_on_previous_text': databaseValue[1]["checkBoxVal"],
-
-                # temperature to increase when falling back when the decoding fails to
-                # meet either of the thresholds below
-                'temperature_increment_on_fallback': databaseValue[1]["temperature_increment_on_fallback"],
-
-                # if the gzip compression ratio is higher than this value, treat the
-                # decoding as failed
-                'compression_ratio_threshold': databaseValue[1]["compression_ratio_threshold"],
-
-                # if the average log probability is lower than this value, treat the
-                # decoding as failed
-                'logprob_threshold': databaseValue[1]["logprob_threshold"],
-
-                # if the probability of the <|nospeech|> token is higher than this
-                # value AND the decoding has failed due to `logprob_threshold`,
-                # consider the segment as silence
-                'no_speech_threshold': databaseValue[1]["no_speech_threshold"],
-            }
-
-            # https://replicate.com/openai/whisper/versions/30414ee7c4fffc37e260fcab7842b5be470b9b840f2b608f5baa9bbef9a259ed#output-schema
-            try:
-                st.warning("Transcribing Audio...")
-                output = version.predict(**inputs)
-                # print(output)
-                # Performing the Analysis
-                output = version.predict(**inputs)
-
-                # Audio Language Detection
-                st.write("Detected Language : ", output['detected_language'])
+                    # Translated Item
+                    st.text_area("English Translated",value=output["translation"])
+                    st.success("Transcription Completed!")
                 
-                st.subheader("Output")
-                st.text_area(" ",value=output["transcription"])
-
-                # Translated Item
-                st.checkbox("Translate",value=True)
-                st.text_area("English Translated",value=output["translation"])
-                st.success("Transcription Completed!")
+                except Exception:
+                    st.error("Looks like some parameters are incorrect in settings or API expired.")
             
-            except Exception:
-                st.error("Looks like some parameters are incorrect in settings or API expired.")
+            if audio_upload is not None:
+            
+                databaseValue = getItem()
+                inputs = {
+                    # Audio file
+                    'audio': audio_upload,
+                    'model': "large-v2",
+                    'transcription': databaseValue[1]["transcription"],
+                    'translate': True,
+                    'temperature': 0,
+                    'suppress_tokens': -1,
+                    'condition_on_previous_text': True,
+                    'temperature_increment_on_fallback': 0.2,
+                    'compression_ratio_threshold': 2.4,
+                    'logprob_threshold': -1,
+                    'no_speech_threshold': 0.6,
+                }
+                try:
+                    st.warning("Transcribing Audio...")
+                    output = version.predict(**inputs)
+
+                    # Audio Language Detection
+                    st.write("Detected Language : ", output['detected_language'])
+                    st.subheader("Output")
+                    st.text_area(" ",value=output["transcription"])
+
+                    # Translated Item
+                    st.text_area("English Translated",value=output["translation"])
+                    st.success("Transcription Completed!")
+                
+                except Exception:
+                    st.error("Looks like some parameters are incorrect in settings or API expired.")
         
-        if audio_upload is not None:
-            
-            # Model Initialization
-            model = replicate.models.get("openai/whisper")
-            version = model.versions.get("e39e354773466b955265e969568deb7da217804d8e771ea8c9cd0cef6591f8bc")
-            
-            databaseValue = getItem()
-            inputs = {
-                # Audio file
-                'audio': audio_upload,
 
-                # Choose a Whisper model.
-                'model': "large-v2",
-
-                # Choose the format for the transcription
-                'transcription': databaseValue[1]["transcription"],
-
-                # Translate the text to English when set to True
-                'translate': True,
-
-                # language spoken in the audio, specify None to perform language
-                # detection
-                # 'language': ...,
-
-                # temperature to use for sampling
-                'temperature': 0,
-
-                # optional patience value to use in beam decoding, as in
-                # https://arxiv.org/abs/2204.05424, the default (1.0) is equivalent to
-                # conventional beam search
-                # 'patience': databaseValue[1]["patience"],
-
-                # comma-separated list of token ids to suppress during sampling; '-1'
-                # will suppress most special characters except common punctuations
-                'suppress_tokens': -1,
-
-                # optional text to provide as a prompt for the first window.
-                # 'initial_prompt': databaseValue[1]["initial_prompt"],
-
-                # if True, provide the previous output of the model as a prompt for
-                # the next window; disabling may make the text inconsistent across
-                # windows, but the model becomes less prone to getting stuck in a
-                # failure loop
-                'condition_on_previous_text': True,
-
-                # temperature to increase when falling back when the decoding fails to
-                # meet either of the thresholds below
-                'temperature_increment_on_fallback': 0.2,
-
-                # if the gzip compression ratio is higher than this value, treat the
-                # decoding as failed
-                'compression_ratio_threshold': 2.4,
-
-                # if the average log probability is lower than this value, treat the
-                # decoding as failed
-                'logprob_threshold': -1,
-
-                # if the probability of the <|nospeech|> token is higher than this
-                # value AND the decoding has failed due to `logprob_threshold`,
-                # consider the segment as silence
-                'no_speech_threshold': 0.6,
-            }
-
-            # https://replicate.com/openai/whisper/versions/30414ee7c4fffc37e260fcab7842b5be470b9b840f2b608f5baa9bbef9a259ed#output-schema
-            try:
-                st.warning("Transcribing Audio...")
-                output = version.predict(**inputs)
-                # print(output)
-                # Performing the Analysis
-                output = version.predict(**inputs)
-
-                # Audio Language Detection
-                st.write("Detected Language : ", output['detected_language'])
-                
-                st.subheader("Output")
-                st.text_area(" ",value=output["transcription"])
-
-                # Translated Item
-                st.checkbox("Translate",value=True)
-                st.text_area("English Translated",value=output["translation"])
-                st.success("Transcription Completed!")
-            
-            except Exception:
-                st.error("Looks like some parameters are incorrect in settings or API expired.")
-    
-        else:
-            st.sidebar.error("Please Upload an Audio")
 elif key == "":
     st.sidebar.warning("Enter Secret Key")
 else:
     st.sidebar.error("Incorrect Secret Key")
 
+
+
 st.write("______________________________________________________________________________")
 
-link = '[Return to Magicaibox](https://www.magicaibox.site/controlpanel/udashboard)'
-html = """
-    <style>
-    a{
-        border-radius:2px;
-        border:1px solid;
-        text-decoration:none;
-        padding:6px;
-        color: black;
-    }
-    a:hover{
-        text-decoration:none;
-        color:red;
-        border:1px solid red;
-    }
-    .css-1fv8s86 e16nr0p34{
-        float: right;
-        margin-top: -50px;
-    }
-"""
-st.markdown(link, unsafe_allow_html=True)
-st.markdown(html, unsafe_allow_html=True)
