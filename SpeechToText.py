@@ -139,8 +139,9 @@ if key == auth[4]["secretKey"]:
 
     st.write("__________________________________________________________________")
     col4 , col5 = st.columns(2)
+    translate = True
     with col5:
-        st.checkbox("Translate",value=True)
+        translate = st.checkbox("Translate",value=True)
     with col4:
         if st.button("Transcribe Audio"):
             if audio_file is not None:
@@ -171,7 +172,8 @@ if key == auth[4]["secretKey"]:
                     st.text_area(" ",value=output["transcription"])
 
                     # Translated Item
-                    st.text_area("English Translated",value=output["translation"])
+                    if translate:
+                        st.text_area("English Translated",value=output["translation"])
                     st.success("Transcription Completed!")
                 
                 except Exception:
@@ -204,7 +206,8 @@ if key == auth[4]["secretKey"]:
                     st.text_area(" ",value=output["transcription"])
 
                     # Translated Item
-                    st.text_area("English Translated",value=output["translation"])
+                    if translate:
+                        st.text_area("English Translated",value=output["translation"])
                     st.success("Transcription Completed!")
                 
                 except Exception:
