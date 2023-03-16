@@ -30,7 +30,7 @@ footer{
  
 st.markdown(hide_menu , unsafe_allow_html=True)
 
-
+#edit
 # Initializing the Database
 deta = Deta('a0vvxqkjjrd_UEZCetnYYiHbrAEFyCjeXjSKUbCbQp4W')
 db = deta.Base('whisper')
